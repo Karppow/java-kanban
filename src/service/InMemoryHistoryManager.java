@@ -1,11 +1,14 @@
 package service;
 
 import model.Task;
-import java.util.*;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.ArrayList;
 
 public class InMemoryHistoryManager implements HistoryManager {
-    private final LinkedList<Task> history = new LinkedList<>(); // Используем LinkedList для хранения истории
-    private final Map<Integer, Task> taskMap = new HashMap<>(); // HashMap для быстрого доступа
+    private final CustomLinkedList history = new CustomLinkedList(); // Используем кастомный связанный список
+    private final HashMap<Integer, CustomLinkedList.Node> taskMap = new HashMap<>(); // Храним ссылки на узлы
 
     @Override
     public void add(Task task) {
@@ -14,22 +17,27 @@ public class InMemoryHistoryManager implements HistoryManager {
         // Если задача уже есть в истории, удаляем ее
         remove(task.getId());
 
-        // Добавляем задачу в конец списка
-        history.add(task);
-        taskMap.put(task.getId(), task);
+        // Добавляем задачу в конец списка и получаем новый узел
+        CustomLinkedList.Node newNode = history.add(task);
+        taskMap.put(task.getId(), newNode);
     }
 
     @Override
     public void remove(int id) {
-        Task task = taskMap.remove(id); // Удаляем задачу из HashMap
-        if (task != null) {
-            history.remove(task); // Удаляем задачу из LinkedList
+        CustomLinkedList.Node node = taskMap.remove(id); // Удаляем задачу из HashMap
+        if (node != null) {
+            history.remove(node); // Удаляем узел из кастомного связанного списка
         }
     }
 
     @Override
     public List<Task> getHistory() {
-        return new ArrayList<>(history); // Возвращаем копию истории
+        List<Task> tasks = new ArrayList<>();
+        CustomLinkedList.Node current = history.getHead();
+        while (current != null) {
+            tasks.add(current.task);
+            current = current.next;
+        }
+        return tasks; // Возвращаем копию истории
     }
 }
-
