@@ -1,3 +1,9 @@
+package service;
+
+import model.Epic;
+import model.Subtask;
+import model.Task;
+
 import java.util.List;
 
 public interface TaskManager {
@@ -13,5 +19,6 @@ public interface TaskManager {
     void deleteTask(int id);
     void deleteSubtask(int id);
     void deleteEpic(int id);
-    List<Task> getHistory(); // Новый метод для получения истории
+    void updateSubtask(Subtask subtask);
+    List<Task> getHistory();
 }
