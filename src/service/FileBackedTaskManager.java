@@ -6,14 +6,13 @@ import model.Epic;
 import model.Subtask;
 import model.Task;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Files;
 import java.util.List;
 
 public class FileBackedTaskManager extends InMemoryTaskManager {
     private final File file;
+    private int maxId = 0; // Счетчик максимальных идентификаторов
 
     public FileBackedTaskManager(File file) {
         this.file = file;
@@ -21,20 +20,23 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
 
     @Override
     public int createTask(Task task) {
+        task.setId(++maxId); // Устанавливаем уникальный идентификатор
         int id = super.createTask(task);
         save();
         return id;
     }
 
     @Override
-    public Subtask createSubtask(Subtask subtask) {
-        Subtask createdSubtask = super.createSubtask(subtask);
+    public int createSubtask(Subtask subtask) {
+        subtask.setId(++maxId); // Устанавливаем уникальный идентификатор
+        int createdSubtaskId = super.createSubtask(subtask);
         save();
-        return createdSubtask;
+        return createdSubtaskId;
     }
 
     @Override
     public Epic createEpic(Epic epic) {
+        epic.setId(++maxId); // Устанавливаем уникальный идентификатор
         Epic createdEpic = super.createEpic(epic);
         save();
         return createdEpic;
@@ -42,17 +44,12 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
 
     @Override
     public void deleteTask(int id) {
-        try {
-            super.deleteTask(id);
-            save();
-        } catch (ManagerSaveException e) {
-            // Логируем или обрабатываем исключение
-            System.err.println("Ошибка при сохранении после удаления задачи: " + e.getMessage());
-        }
+        super.deleteTask(id);
+        save();
     }
 
     @Override
-    public void deleteSubtask(Subtask id) {
+    public void deleteSubtask(int id) {
         super.deleteSubtask(id);
         save();
     }
@@ -71,26 +68,24 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
 
     @Override
     public List<Task> getHistory() {
-        return List.of();
+        return super.getHistory();
     }
 
     @Override
     public Task getTask(int id) {
-        return null;
+        return super.getTaskById(id);
     }
 
-    @Override
-    public Task getSubtask(Subtask id) {
-        return null;
+    public Subtask getSubtask(int id) {
+        return super.getSubtaskById(id);
     }
 
-    @Override
     public void updateTask(int id, Task task) {
         save();
     }
 
     void save() {
-        try (FileWriter writer = new FileWriter(file)) {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
             writer.write("id,type,name,status,description,epic\n");
             for (Task task : getAllTasks()) {
                 writer.write(formatTask(task));
@@ -115,24 +110,33 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
     }
 
     private String formatSubtask(Subtask subtask) {
-        return String.format("%d,SUBTASK,%s,%s,%s,%d\n", subtask.getId(), subtask.getTitle(), subtask.getStatus(), subtask.getDescription(), subtask.getEpicId());
+        return String.format("%d,SUBTASK,%s,%s,%s,%d\n",
+                subtask.getId(),
+                subtask.getTitle(),
+                subtask.getStatus(),
+                subtask.getDescription(),
+                subtask.getEpicId());
     }
 
     public static FileBackedTaskManager loadFromFile(File file) {
         if (!file.exists()) {
-            return new FileBackedTaskManager(file); // Возвращаем новый менеджер, если файл не существует
+            return new FileBackedTaskManager(file);
         }
         FileBackedTaskManager manager = new FileBackedTaskManager(file);
-        try {
-            List<String> lines = Files.readAllLines(file.toPath());
-            for (String line : lines.subList(1, lines.size())) { // Пропускаем заголовок
+        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                if (line.startsWith("id,type,name,status,description,epic")) {
+                    continue; // Пропускаем заголовок
+                }
                 Task task = Task.fromString(line);
-                if (task instanceof Subtask) {
-                    manager.createSubtask((Subtask) task);
-                } else if (task instanceof Epic) {
-                    manager.createEpic((Epic) task);
+                if (task != null) {
+                    manager.createTask(task); // Создаем задачу в менеджере
+                    if (task.getId() > manager.maxId) {
+                        manager.maxId = task.getId(); // Обновляем maxId
+                    }
                 } else {
-                    manager.createTask(task);
+                    System.out.println("Ignoring invalid task line: " + line);
                 }
             }
         } catch (IOException e) {

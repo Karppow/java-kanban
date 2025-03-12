@@ -8,7 +8,7 @@ import java.util.List;
 
 public interface TaskManager {
     int createTask(Task task);
-    Subtask createSubtask(Subtask subtask);
+    int createSubtask(Subtask subtask);
     Epic createEpic(Epic epic);
     Task getTaskById(Task id);
 
@@ -29,4 +29,5 @@ public interface TaskManager {
     List<Task> getHistory();
     Task getTask(int id);
     Task getSubtask(Subtask id);
+    void updateTask(int id, Task task);
 }
