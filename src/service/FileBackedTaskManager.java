@@ -6,9 +6,7 @@ import model.Epic;
 import model.Subtask;
 import model.Task;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Files;
 import java.util.List;
 
@@ -27,10 +25,10 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
     }
 
     @Override
-    public Subtask createSubtask(Subtask subtask) {
-        Subtask createdSubtask = super.createSubtask(subtask);
+    public int createSubtask(Subtask subtask) {
+        int createdSubtaskId = super.createSubtask(subtask); // Получаем ID подзадачи
         save();
-        return createdSubtask;
+        return createdSubtaskId; // Возвращаем ID подзадачи
     }
 
     @Override
@@ -71,17 +69,17 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
 
     @Override
     public List<Task> getHistory() {
-        return List.of();
+        return super.getHistory();
     }
 
     @Override
     public Task getTask(int id) {
-        return null;
+        return tasks.get(id);
     }
 
     @Override
-    public Task getSubtask(Subtask id) {
-        return null;
+    public Task getSubtask(int id) {
+        return subtasks.get(id); // предполагается, что subtasks - это ваша коллекция подзадач
     }
 
     @Override
@@ -90,7 +88,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
     }
 
     void save() {
-        try (FileWriter writer = new FileWriter(file)) {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
             writer.write("id,type,name,status,description,epic\n");
             for (Task task : getAllTasks()) {
                 writer.write(formatTask(task));
@@ -120,13 +118,14 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
 
     public static FileBackedTaskManager loadFromFile(File file) {
         if (!file.exists()) {
-            return new FileBackedTaskManager(file); // Возвращаем новый менеджер, если файл не существует
+            return new FileBackedTaskManager(file);
         }
         FileBackedTaskManager manager = new FileBackedTaskManager(file);
-        try {
+        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
             List<String> lines = Files.readAllLines(file.toPath());
-            for (String line : lines.subList(1, lines.size())) { // Пропускаем заголовок
+            for (String line : lines.subList(1, lines.size())) {
                 Task task = Task.fromString(line);
+
                 if (task instanceof Subtask) {
                     manager.createSubtask((Subtask) task);
                 } else if (task instanceof Epic) {

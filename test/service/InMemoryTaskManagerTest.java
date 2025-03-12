@@ -16,7 +16,17 @@ class InMemoryTaskManagerTest {
 
     @BeforeEach
     void setUp() {
-        taskManager = new InMemoryTaskManager();
+        taskManager = new InMemoryTaskManager() {
+            @Override
+            public Task getSubtask(int id) {
+                return null;
+            }
+
+            @Override
+            public void updateTask(int id, Task task) {
+
+            }
+        };
     }
 
     @Test

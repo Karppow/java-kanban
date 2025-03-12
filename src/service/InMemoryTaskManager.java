@@ -11,8 +11,8 @@ import java.util.List;
 
 public abstract class InMemoryTaskManager implements TaskManager {
 
-    private final HashMap<Integer, Task> tasks = new HashMap<>();
-    private final HashMap<Integer, Subtask> subtasks = new HashMap<>();
+    public final HashMap<Integer, Task> tasks = new HashMap<>();
+    public final HashMap<Integer, Subtask> subtasks = new HashMap<>();
     public final HashMap<Integer, Epic> epics = new HashMap<>();
     private final HistoryManager historyManager = Managers.getDefaultHistory();
     private int idCounter = 1;
@@ -27,7 +27,7 @@ public abstract class InMemoryTaskManager implements TaskManager {
     }
 
     @Override
-    public Subtask createSubtask(Subtask subtask) {
+    public int createSubtask(Subtask subtask) {
         // Проверка на подзадачу самого себя
         if (subtask.getEpicId() == subtask.getId()) {
             throw new IllegalArgumentException("Epic cannot be a subtask of itself.");
@@ -41,7 +41,7 @@ public abstract class InMemoryTaskManager implements TaskManager {
             updateEpicStatus(epic.getId());
         }
 
-        return subtask;
+        return subtask.getId(); // Возвращаем ID подзадачи
     }
 
     @Override
@@ -59,7 +59,9 @@ public abstract class InMemoryTaskManager implements TaskManager {
     @Override
     public Task getTaskById(int id) {
         Task task = tasks.get(id);
-        historyManager.add(task); // Добавляем задачу в историю
+        if (task != null) {
+            historyManager.add(task); // Добавляем задачу в историю
+        }
         return task;
     }
 
@@ -184,6 +186,8 @@ public abstract class InMemoryTaskManager implements TaskManager {
         }
         return epicSubtasks;
     }
+
+    public abstract Task getSubtask(int id);
 
     public abstract void updateTask(int id, Task task);
 }

@@ -11,6 +11,11 @@ public class Managers {
             }
 
             @Override
+            public Task getSubtask(int id) {
+                return null;
+            }
+
+            @Override
             public void updateTask(int id, Task task) {
 
             }

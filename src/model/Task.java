@@ -70,9 +70,9 @@ public class Task {
     public static Task fromString(String value) {
         String[] fields = value.split(",");
         int id = Integer.parseInt(fields[0]);
-        String title = fields[2];
+        String title = fields[2].equals("null") ? null : fields[2];
         TaskStatus status = TaskStatus.valueOf(fields[3]);
-        String description = fields[4];
+        String description = fields[4].equals("null") ? null : fields[4];
 
         Task task = new Task(title, description, status);
         task.setId(id);
