@@ -12,6 +12,9 @@ public class Task {
         this.status = status;
     }
 
+    public Task(int id, String name, TaskStatus taskStatus, String description) {
+    }
+
     public int getId() {
         return id;
     }
@@ -55,5 +58,24 @@ public class Task {
     @Override
     public int hashCode() {
         return Integer.hashCode(id);
+    }
+
+    // Метод для преобразования задачи в строку в формате CSV
+    @Override
+    public String toString() {
+        return String.format("%d,TASK,%s,%s,%s,", id, title, status, description);
+    }
+
+    // Статический метод для создания задачи из строки
+    public static Task fromString(String value) {
+        String[] fields = value.split(",");
+        int id = Integer.parseInt(fields[0]);
+        String title = fields[2];
+        TaskStatus status = TaskStatus.valueOf(fields[3]);
+        String description = fields[4];
+
+        Task task = new Task(title, description, status);
+        task.setId(id);
+        return task;
     }
 }
