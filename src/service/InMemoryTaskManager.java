@@ -168,28 +168,28 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     private void updateEpicStatus ( int epicId){
-            Epic epic = epics.get(epicId);
-            if (epic == null) return;
+        Epic epic = epics.get(epicId);
+        if (epic == null) return;
 
-            List<Subtask> epicSubtasks = getAllSubtasksByEpicId(epicId);
-            if (epicSubtasks.isEmpty()) {
-                epic.setStatus(TaskStatus.NEW);
-            } else if (epicSubtasks.stream().allMatch(subtask -> subtask.getStatus() == TaskStatus.DONE)) {
-                epic.setStatus(TaskStatus.DONE);
-            } else if (epicSubtasks.stream().allMatch(subtask -> subtask.getStatus() == TaskStatus.NEW)) {
-                epic.setStatus(TaskStatus.NEW);
-            } else {
-                epic.setStatus(TaskStatus.IN_PROGRESS);
-            }
-        }
-
-        private List<Subtask> getAllSubtasksByEpicId ( int epicId){
-            List<Subtask> epicSubtasks = new ArrayList<>();
-            for (Subtask subtask : subtasks.values()) {
-                if (subtask.getEpicId() == epicId) {
-                    epicSubtasks.add(subtask);
-                }
-            }
-            return epicSubtasks;
+        List<Subtask> epicSubtasks = getAllSubtasksByEpicId(epicId);
+        if (epicSubtasks.isEmpty()) {
+            epic.setStatus(TaskStatus.NEW);
+        } else if (epicSubtasks.stream().allMatch(subtask -> subtask.getStatus() == TaskStatus.DONE)) {
+            epic.setStatus(TaskStatus.DONE);
+        } else if (epicSubtasks.stream().allMatch(subtask -> subtask.getStatus() == TaskStatus.NEW)) {
+            epic.setStatus(TaskStatus.NEW);
+        } else {
+            epic.setStatus(TaskStatus.IN_PROGRESS);
         }
     }
+
+    private List<Subtask> getAllSubtasksByEpicId ( int epicId){
+        List<Subtask> epicSubtasks = new ArrayList<>();
+        for (Subtask subtask : subtasks.values()) {
+            if (subtask.getEpicId() == epicId) {
+                epicSubtasks.add(subtask);
+            }
+        }
+        return epicSubtasks;
+    }
+}

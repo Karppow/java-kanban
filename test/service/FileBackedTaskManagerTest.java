@@ -56,54 +56,54 @@ class FileBackedTaskManagerTest extends BaseTaskManagerTest {
     }
 
     @Test
-        void deleteEpic() {
-            int epicId = createEpic("Эпик для удаления", "Описание эпика");
-            deleteEpic(epicId);
-            assertNull(taskManager.getEpicById(epicId));
-        }
-
-        @Test
-        void updateSubtask() {
-            int epicId = createEpic("Эпик для обновления", "Описание эпика");
-            int subtaskId = createSubtask("Подзадача", "Описание", TaskStatus.NEW, epicId);
-
-            Subtask subtaskToUpdate = taskManager.getSubtaskById(subtaskId);
-            subtaskToUpdate.setStatus(TaskStatus.DONE);
-            updateSubtask(subtaskToUpdate);
-
-            assertEquals(TaskStatus.DONE, taskManager.getSubtaskById(subtaskId).getStatus());
-        }
-
-        @Test
-        void getHistory() {
-            int taskId = createTask("История задачи", "Описание", TaskStatus.NEW);
-            taskManager.getTaskById(taskId); // Доступ к задаче, чтобы убедиться, что она добавлена в историю
-
-            assertEquals(1, taskManager.getHistory().size());
-            assertEquals(taskId, taskManager.getHistory().get(0).getId());
-        }
-
-        @Test
-        void save() {
-            createTask("Сохранить задачу", "Описание", TaskStatus.NEW);
-            taskManager.save(); // Явно вызываем сохранение
-            assertTrue(testFile.exists());
-        }
-
-        @Test
-        void loadFromFile() {
-            // Создаем и сохраняем задачу в файл
-            int taskId = createTask("Задача для загрузки", "Описание задачи", TaskStatus.NEW);
-            taskManager.save(); // Сохраняем задачи в файл
-
-            // Создаем новый менеджер задач, который будет загружать данные из файла
-            FileBackedTaskManager loadedManager = FileBackedTaskManager.loadFromFile(testFile);
-
-            // Проверяем, что задача была загружена корректно
-            Task loadedTask = loadedManager.getTaskById(taskId);
-            Assertions.assertNotNull(loadedTask, "Loaded task should not be null");
-            assertEquals("Задача для загрузки", loadedTask.getTitle());
-            assertEquals("Описание задачи", loadedTask.getDescription());
-            assertEquals(TaskStatus.NEW, loadedTask.getStatus());
-        }
+    void deleteEpic() {
+        int epicId = createEpic("Эпик для удаления", "Описание эпика");
+        deleteEpic(epicId);
+        assertNull(taskManager.getEpicById(epicId));
     }
+
+    @Test
+    void updateSubtask() {
+        int epicId = createEpic("Эпик для обновления", "Описание эпика");
+        int subtaskId = createSubtask("Подзадача", "Описание", TaskStatus.NEW, epicId);
+
+        Subtask subtaskToUpdate = taskManager.getSubtaskById(subtaskId);
+        subtaskToUpdate.setStatus(TaskStatus.DONE);
+        updateSubtask(subtaskToUpdate);
+
+        assertEquals(TaskStatus.DONE, taskManager.getSubtaskById(subtaskId).getStatus());
+    }
+
+    @Test
+    void getHistory() {
+        int taskId = createTask("История задачи", "Описание", TaskStatus.NEW);
+        taskManager.getTaskById(taskId); // Доступ к задаче, чтобы убедиться, что она добавлена в историю
+
+        assertEquals(1, taskManager.getHistory().size());
+        assertEquals(taskId, taskManager.getHistory().get(0).getId());
+    }
+
+    @Test
+    void save() {
+        createTask("Сохранить задачу", "Описание", TaskStatus.NEW);
+        taskManager.save(); // Явно вызываем сохранение
+        assertTrue(testFile.exists());
+    }
+
+    @Test
+    void loadFromFile() {
+        // Создаем и сохраняем задачу в файл
+        int taskId = createTask("Задача для загрузки", "Описание задачи", TaskStatus.NEW);
+        taskManager.save(); // Сохраняем задачи в файл
+
+        // Создаем новый менеджер задач, который будет загружать данные из файла
+        FileBackedTaskManager loadedManager = FileBackedTaskManager.loadFromFile(testFile);
+
+        // Проверяем, что задача была загружена корректно
+        Task loadedTask = loadedManager.getTaskById(taskId);
+        Assertions.assertNotNull(loadedTask, "Loaded task should not be null");
+        assertEquals("Задача для загрузки", loadedTask.getTitle());
+        assertEquals("Описание задачи", loadedTask.getDescription());
+        assertEquals(TaskStatus.NEW, loadedTask.getStatus());
+    }
+}
