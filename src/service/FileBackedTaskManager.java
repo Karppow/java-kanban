@@ -7,12 +7,10 @@ import model.Subtask;
 import model.Task;
 
 import java.io.*;
-import java.nio.file.Files;
 import java.util.List;
 
 public class FileBackedTaskManager extends InMemoryTaskManager {
     private final File file;
-    private int maxId = 0; // Счетчик максимальных идентификаторов
 
     public FileBackedTaskManager(File file) {
         this.file = file;
@@ -20,15 +18,13 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
 
     @Override
     public int createTask(Task task) {
-        task.setId(++maxId); // Устанавливаем уникальный идентификатор
-        int id = super.createTask(task);
+        int id = super.createTask(task); // Устанавливаем уникальный идентификатор
         save();
         return id;
     }
 
     @Override
     public int createSubtask(Subtask subtask) {
-        subtask.setId(++maxId); // Устанавливаем уникальный идентификатор
         int createdSubtaskId = super.createSubtask(subtask);
         save();
         return createdSubtaskId;
@@ -36,7 +32,6 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
 
     @Override
     public Epic createEpic(Epic epic) {
-        epic.setId(++maxId); // Устанавливаем уникальный идентификатор
         Epic createdEpic = super.createEpic(epic);
         save();
         return createdEpic;
@@ -130,13 +125,17 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
                     continue; // Пропускаем заголовок
                 }
                 Task task = Task.fromString(line);
-                if (task != null) {
+                if (task instanceof Epic) {
+                    manager.createEpic((Epic) task); // Создаем эпик
+                } else if (task instanceof Subtask) {
+                    manager.createSubtask((Subtask) task); // Создаем подзадачу
+                } else if (task != null) {
                     manager.createTask(task); // Создаем задачу в менеджере
-                    if (task.getId() > manager.maxId) {
-                        manager.maxId = task.getId(); // Обновляем maxId
-                    }
-                } else {
-                    System.out.println("Ignoring invalid task line: " + line);
+                }
+
+                // Обновляем idCounter, если текущий id задачи больше
+                if (task != null && task.getId() >= manager.idCounter) {
+                    manager.idCounter = task.getId() + 1; // Увеличиваем idCounter для следующего создания
                 }
             }
         } catch (IOException e) {

@@ -10,16 +10,14 @@ import java.util.HashMap;
 import java.util.List;
 
 public class InMemoryTaskManager implements TaskManager {
-
     protected final HashMap<Integer, Task> tasks = new HashMap<>();
     protected final HashMap<Integer, Subtask> subtasks = new HashMap<>();
     protected final HashMap<Integer, Epic> epics = new HashMap<>();
-    public final HistoryManager historyManager = Managers.getDefaultHistory();
-    private int idCounter = 1;
+    protected final HistoryManager historyManager = Managers.getDefaultHistory();
+    protected int idCounter = 1;
 
     @Override
     public int createTask(Task task) {
-        // Предполагаем, что task уже является конкретным подклассом Task, например, SimpleTask
         if (task == null) {
             throw new IllegalArgumentException("Task cannot be null");
         }
