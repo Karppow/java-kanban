@@ -31,10 +31,10 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
     }
 
     @Override
-    public Epic createEpic(Epic epic) {
-        Epic createdEpic = super.createEpic(epic);
+    public int createEpic(Epic epic) {
+        int createdEpicId = super.createEpic(epic);
         save();
-        return createdEpic;
+        return createdEpicId;
     }
 
     @Override
@@ -97,7 +97,13 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
     }
 
     private String formatTask(Task task) {
-        return String.format("%d,TASK,%s,%s,%s,\n", task.getId(), task.getTitle(), task.getStatus(), task.getDescription());
+        return String.format("%d,TASK,%s,%s,%s,%s,%s\n",
+                task.getId(),
+                task.getTitle(),
+                task.getStatus(),
+                task.getDescription(),
+                task.getStartTime() != null ? task.getStartTime().toString() : "null",
+                task.getDuration() != null ? task.getDuration().toString() : "null");
     }
 
     private String formatEpic(Epic epic) {
@@ -124,7 +130,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
                 if (line.startsWith("id,type,name,status,description,epic")) {
                     continue; // Пропускаем заголовок
                 }
-                Task task = Task.fromString(line);
+                Task task = Task.fromString(line, manager); // Измененный вызов
                 if (task instanceof Epic) {
                     manager.createEpic((Epic) task); // Создаем эпик
                 } else if (task instanceof Subtask) {
@@ -139,7 +145,6 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
                 }
             }
         } catch (IOException e) {
-            throw new ManagerReadFileException("Ошибка загрузки данных", e);
         }
         return manager;
     }

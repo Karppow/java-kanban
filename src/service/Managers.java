@@ -1,5 +1,6 @@
 package service;
 
+import model.Subtask;
 import model.Task;
 
 public class Managers {
@@ -16,7 +17,8 @@ public class Managers {
                 return null; // Логика для тестирования
             }
 
-            public Task getSubtask(int id) {
+            @Override
+            public Subtask getSubtask(int id) { // Изменено на Subtask
                 return null; // Логика для тестирования
             }
 
