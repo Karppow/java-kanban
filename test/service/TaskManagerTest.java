@@ -108,28 +108,33 @@ public abstract class TaskManagerTest<T extends TaskManager> {
         Exception exception = assertThrows(IllegalArgumentException.class, () -> {
             taskManager.createTask(task2);
         });
-        assertEquals("New task overlaps with existing tasks.", exception.getMessage());
+        assertEquals("New task overlaps with existing tasks.", exception.getMessage()); // Изменено
     }
 
     @Test
-    public void testCreateSubtaskWithOverlappingTime() {
-        Epic epic = new Epic("Test Epic", "Description");
+    void testCreateSubtaskWithOverlappingTime() {
+        // Создаем эпик
+        Epic epic = new Epic("Эпик 1", "Описание эпика 1");
         int epicId = taskManager.createEpic(epic);
 
-        Subtask subtask1 = new Subtask("Subtask 1", "Description", TaskStatus.NEW, epicId);
+        // Создаем первую подзадачу
+        Subtask subtask1 = new Subtask("Подзадача 1", "Описание подзадачи 1", TaskStatus.NEW, epicId);
         subtask1.setStartTime(LocalDateTime.now());
         subtask1.setDuration(Duration.ofHours(2));
         taskManager.createSubtask(subtask1);
 
-        Subtask subtask2 = new Subtask("Subtask 2", "Description", TaskStatus.NEW, epicId);
-        subtask2.setStartTime(LocalDateTime.now().plusHours(1)); // Перекрытие с subtask1
+        // Создаем вторую подзадачу, которая пересекается с первой
+        Subtask subtask2 = new Subtask("Подзадача 2", "Описание подзадачи 2", TaskStatus.NEW, epicId);
+        subtask2.setStartTime(LocalDateTime.now().plusHours(1)); // Пересекается с subtask1
         subtask2.setDuration(Duration.ofHours(2));
 
+        // Ожидаем, что будет выброшено исключение
         Exception exception = assertThrows(IllegalArgumentException.class, () -> {
             taskManager.createSubtask(subtask2);
         });
-        assertEquals("New subtask overlaps with existing tasks.", exception.getMessage());
+        assertEquals("New task overlaps with existing tasks.", exception.getMessage()); // Изменено
     }
+
 
     @Test
     public void testGetAllTasks() {
@@ -225,7 +230,7 @@ public abstract class TaskManagerTest<T extends TaskManager> {
         int taskId = taskManager.createTask(task);
 
         task.setTitle("Updated Task");
-        taskManager.updateTask(taskId, task); // Передаем taskId как первый аргумент
+        taskManager.updateTask(task); // Передаем taskId как первый аргумент
 
         assertEquals("Updated Task", taskManager.getTaskById(taskId).getTitle());
     }
@@ -252,7 +257,7 @@ public abstract class TaskManagerTest<T extends TaskManager> {
         int epicId = taskManager.createEpic(epic);
 
         epic.setTitle("Updated Epic");
-        taskManager.updateEpic(epicId, epic); // Обновляем эпик
+        taskManager.updateEpic(epic); // Обновляем эпик
 
         assertEquals("Updated Epic", taskManager.getEpicById(epicId).getTitle());
     }

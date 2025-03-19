@@ -24,8 +24,8 @@ public interface TaskManager {
     void deleteEpic(int id); // Удаляет эпик по ID
 
     void updateSubtask(Subtask subtask); // Обновляет подзадачу
-    void updateTask(int id, Task task); // Обновляет задачу по ID
-    void updateEpic(int epicId, Epic epic);
+    void updateTask(Task task); // Обновляет задачу по ID
+    void updateEpic(Epic epic);
 
     List<Task> getHistory(); // Получает историю задач
 }

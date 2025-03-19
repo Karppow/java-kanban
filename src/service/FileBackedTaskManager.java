@@ -67,11 +67,11 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
     }
 
     @Override
-    public Task getTask(int id) {
+    public Task getTaskById(int id) {
         return super.getTaskById(id);
     }
 
-    public Subtask getSubtask(int id) {
+    public Subtask getSubtaskById(int id) {
         return super.getSubtaskById(id);
     }
 
