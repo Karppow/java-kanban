@@ -1,26 +1,50 @@
 package model;
 
 import service.FileBackedTaskManager;
+import java.time.Duration;
+import java.time.LocalDateTime;
 
 public class Subtask extends Task {
-    private final int epicId; // Изменяем тип на int
+    private final int epicId; // ID эпика
+    private LocalDateTime startTime; // Время начала подзадачи
+    private Duration duration; // Длительность подзадачи
 
     public Subtask(String title, String description, TaskStatus status, int epicId) {
-        super(title, description, status); // ID не задается, будет установлен в service.TaskManager
-        this.epicId = epicId; // Сохраняем переданный ID эпика
+        super(title, description, status);
+        this.epicId = epicId;
     }
 
     public Subtask(int id, String name, TaskStatus taskStatus, String description, int epicId) {
         super(id, name, taskStatus, description);
-        this.epicId = epicId; // Сохраняем переданный ID эпика
+        this.epicId = epicId;
     }
 
     public int getEpicId() {
-        return epicId; // Возвращаем ID эпика
+        return epicId;
+    }
+
+    public LocalDateTime getStartTime() {
+        return startTime;
+    }
+
+    public Duration getDuration() {
+        return duration;
+    }
+
+    public LocalDateTime getEndTime() {
+        return startTime != null && duration != null ? startTime.plus(duration) : null;
+    }
+
+    public void setStartTime(LocalDateTime startTime) {
+        this.startTime = startTime;
+    }
+
+    public void setDuration(Duration duration) {
+        this.duration = duration;
     }
 
     public TaskType getType() {
-        return TaskType.SUBTASK; // Возвращаем тип задачи
+        return TaskType.SUBTASK;
     }
 
     public static Subtask fromString(String value) {
@@ -29,13 +53,12 @@ public class Subtask extends Task {
         String title = parts[2].equals("null") ? null : parts[2];
         TaskStatus status = TaskStatus.valueOf(parts[3]);
         String description = parts[4].equals("null") ? null : parts[4];
-        int epicId = Integer.parseInt(parts[5]); // Получаем ID эпика из строки
-        return new Subtask(id, title, status, description, epicId); // Создаем и возвращаем подзадачу
+        int epicId = Integer.parseInt(parts[5]);
+        return new Subtask(id, title, status, description, epicId);
     }
 
     @Override
     public void create(FileBackedTaskManager manager) {
-
     }
 
     @Override

@@ -9,31 +9,23 @@ import org.junit.jupiter.api.Test;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class InMemoryTaskManagerTest extends TaskManagerTest<InMemoryTaskManager> {
-    private InMemoryTaskManager taskManager;
-
-    @Override
-    protected InMemoryTaskManager createTaskManager() {
-        InMemoryTaskManager manager = new InMemoryTaskManager();
-        assertNotNull(manager, "Created TaskManager should not be null.");
-        return manager;
-    }
+public abstract class TaskManagerTest<T extends TaskManager> {
+    protected T taskManager;
+    protected abstract T createTaskManager();
 
     @BeforeEach
     public void setUp() {
-        taskManager = createTaskManager(); // Initialize taskManager
+        taskManager = createTaskManager();
     }
 
     @Test
     public void testCreateTask() {
         Task task = new Task("Test Task", "Description", TaskStatus.NEW);
-        task.setStartTime(LocalDateTime.now()); // Set start time
-        task.setDuration(Duration.ofHours(1)); // Set duration
+        task.setStartTime(LocalDateTime.now()); // Установите время начала
+        task.setDuration(Duration.ofHours(1)); // Установите длительность
         int taskId = taskManager.createTask(task);
         assertNotNull(taskManager.getTaskById(taskId), "Task should be created successfully.");
     }
@@ -65,7 +57,7 @@ class InMemoryTaskManagerTest extends TaskManagerTest<InMemoryTaskManager> {
         subtask1.setStartTime(LocalDateTime.now());
         subtask1.setDuration(Duration.ofHours(1));
         Subtask subtask2 = new Subtask("Subtask 2", "Description", TaskStatus.NEW, epicId);
-        subtask2.setStartTime(LocalDateTime.now().plusHours(1)); // Set start time later
+        subtask2.setStartTime(LocalDateTime.now().plusHours(1)); // Устанавливаем время начала позже
         subtask2.setDuration(Duration.ofHours(1));
         taskManager.createSubtask(subtask1);
         taskManager.createSubtask(subtask2);
@@ -91,18 +83,14 @@ class InMemoryTaskManagerTest extends TaskManagerTest<InMemoryTaskManager> {
     public void testEpicStatusMixed() {
         Epic epic = new Epic("Test Epic", "Description");
         int epicId = taskManager.createEpic(epic);
-
         Subtask subtask1 = new Subtask("Subtask 1", "Description", TaskStatus.NEW, epicId);
+        Subtask subtask2 = new Subtask("Subtask 2", "Description", TaskStatus.DONE, epicId);
         subtask1.setStartTime(LocalDateTime.now());
         subtask1.setDuration(Duration.ofHours(1));
-
-        Subtask subtask2 = new Subtask("Subtask 2", "Description", TaskStatus.DONE, epicId);
-        subtask2.setStartTime(LocalDateTime.now().plusHours(1)); // Ensure this is set
+        subtask2.setStartTime(LocalDateTime.now().plusHours(1));
         subtask2.setDuration(Duration.ofHours(1));
-
         taskManager.createSubtask(subtask1);
         taskManager.createSubtask(subtask2);
-
         assertEquals(TaskStatus.IN_PROGRESS, taskManager.getEpicById(epicId).getStatus());
     }
 
@@ -114,33 +102,39 @@ class InMemoryTaskManagerTest extends TaskManagerTest<InMemoryTaskManager> {
         taskManager.createTask(task1);
 
         Task task2 = new Task("Task 2", "Description", TaskStatus.NEW);
-        task2.setStartTime(LocalDateTime.now().plusHours(1)); // Overlaps with task1
+        task2.setStartTime(LocalDateTime.now().plusHours(1)); // Перекрытие с task1
         task2.setDuration(Duration.ofHours(2));
 
         Exception exception = assertThrows(IllegalArgumentException.class, () -> {
             taskManager.createTask(task2);
         });
-        assertEquals("New task overlaps with existing tasks.", exception.getMessage());
+        assertEquals("New task overlaps with existing tasks.", exception.getMessage()); // Изменено
     }
 
     @Test
-    public void testCreateSubtaskWithOverlappingTime() {
-        Epic epic = new Epic("Test Epic", "Description");
+    void testCreateSubtaskWithOverlappingTime() {
+        // Создаем эпик
+        Epic epic = new Epic("Эпик 1", "Описание эпика 1");
         int epicId = taskManager.createEpic(epic);
 
-        Subtask subtask1 = new Subtask("Subtask 1", "Description", TaskStatus.NEW, epicId);
+        // Создаем первую подзадачу
+        Subtask subtask1 = new Subtask("Подзадача 1", "Описание подзадачи 1", TaskStatus.NEW, epicId);
         subtask1.setStartTime(LocalDateTime.now());
         subtask1.setDuration(Duration.ofHours(2));
         taskManager.createSubtask(subtask1);
 
-        Subtask subtask2 = new Subtask("Subtask 2", "Description", TaskStatus.NEW, epicId);
-        subtask2.setStartTime(LocalDateTime.now().plusHours(3)); // Убедитесь, что время не пересекается
+        // Создаем вторую подзадачу, которая пересекается с первой
+        Subtask subtask2 = new Subtask("Подзадача 2", "Описание подзадачи 2", TaskStatus.NEW, epicId);
+        subtask2.setStartTime(LocalDateTime.now().plusHours(1)); // Пересекается с subtask1
         subtask2.setDuration(Duration.ofHours(2));
 
-        // Теперь subtask2 не должно вызывать исключение
-        int subtaskId = taskManager.createSubtask(subtask2);
-        assertNotNull(taskManager.getSubtaskById(subtaskId));
+        // Ожидаем, что будет выброшено исключение
+        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
+            taskManager.createSubtask(subtask2);
+        });
+        assertEquals("New task overlaps with existing tasks.", exception.getMessage()); // Изменено
     }
+
 
     @Test
     public void testGetAllTasks() {
@@ -235,11 +229,10 @@ class InMemoryTaskManagerTest extends TaskManagerTest<InMemoryTaskManager> {
         task.setDuration(Duration.ofHours(1));
         int taskId = taskManager.createTask(task);
 
-        // Обновляем задачу с новым временем, которое не пересекается
-        task.setStartTime(LocalDateTime.now().plusHours(2)); // Установите новое время, чтобы избежать пересечения
-        taskManager.updateTask(task); // Обновляем задачу
+        task.setTitle("Updated Task");
+        taskManager.updateTask(task); // Передаем taskId как первый аргумент
 
-        assertEquals("Task to update", taskManager.getTaskById(taskId).getTitle());
+        assertEquals("Updated Task", taskManager.getTaskById(taskId).getTitle());
     }
 
     @Test
@@ -253,11 +246,10 @@ class InMemoryTaskManagerTest extends TaskManagerTest<InMemoryTaskManager> {
         int subtaskId = taskManager.createSubtask(subtask);
 
         subtask.setTitle("Updated Subtask");
-        taskManager.updateSubtask(subtask); // Update the subtask
+        taskManager.updateSubtask(subtask); // Обновляем подзадачу
 
         assertEquals("Updated Subtask", taskManager.getSubtaskById(subtaskId).getTitle());
     }
-
 
     @Test
     public void testUpdateEpic() {
@@ -265,7 +257,7 @@ class InMemoryTaskManagerTest extends TaskManagerTest<InMemoryTaskManager> {
         int epicId = taskManager.createEpic(epic);
 
         epic.setTitle("Updated Epic");
-        taskManager.updateEpic(epic); // Update the epic
+        taskManager.updateEpic(epic); // Обновляем эпик
 
         assertEquals("Updated Epic", taskManager.getEpicById(epicId).getTitle());
     }
@@ -300,106 +292,4 @@ class InMemoryTaskManagerTest extends TaskManagerTest<InMemoryTaskManager> {
 
         assertEquals(epic, taskManager.getEpicById(epicId));
     }
-
-    @Test
-    public void testHistoryManagerPreservesPreviousTaskState() {
-        Task originalTask = new Task("Task 1", "Description", TaskStatus.NEW);
-        originalTask.setStartTime(LocalDateTime.now()); // Ensure start time is set
-        originalTask.setDuration(Duration.ofHours(1)); // Ensure duration is set
-        int taskId = taskManager.createTask(originalTask);
-        taskManager.getTaskById(taskId); // Add to history
-
-        List<Task> history = taskManager.getHistory(); // Get history from taskManager
-        assertNotNull(history, "History should not be empty.");
-        assertEquals(1, history.size(), "History should contain one task.");
-
-        Task historyTask = history.get(0);
-        assertEquals(taskId, historyTask.getId(), "History task should match the original task.");
-        assertEquals(originalTask.getDescription(), historyTask.getDescription(), "History task description should match the original task description.");
-    }
-
-    @Test
-    public void testHistoryAfterTaskDeletion() {
-        Task task1 = new Task("Task 1", "Description", TaskStatus.NEW);
-        task1.setStartTime(LocalDateTime.now()); // Ensure start time is set
-        int taskId1 = taskManager.createTask(task1);
-        taskManager.getTaskById(taskId1); // Add to history
-        assertEquals(1, taskManager.getHistory().size(), "History should contain one task.");
-
-        taskManager.deleteTask(taskId1); // Delete the task
-
-        assertEquals(0, taskManager.getHistory().size(), "History should be empty after deletion.");
-    }
-
-    @Test
-    public void testHistoryAfterEpicDeletion() {
-        Epic epic = new Epic("Epic for history", "Description");
-        int epicId = taskManager.createEpic(epic);
-        taskManager.getEpicById(epicId); // Add to history
-
-        assertEquals(1, taskManager.getHistory().size(), "History should contain one epic.");
-
-        taskManager.deleteEpic(epicId); // Delete the epic
-
-        assertEquals(0, taskManager.getHistory().size(), "History should be empty after deletion.");
-    }
-
-    @Test
-    public void testHistoryAfterSubtaskDeletion() {
-        Epic epic = new Epic("Epic for subtask history", "Description");
-        int epicId = taskManager.createEpic(epic);
-
-        Subtask subtask = new Subtask("Subtask for history", "Description", TaskStatus.NEW, epicId);
-        subtask.setStartTime(LocalDateTime.now()); // Ensure start time is set
-        int subtaskId = taskManager.createSubtask(subtask);
-        taskManager.getSubtaskById(subtaskId); // Add to history
-
-        assertEquals(1, taskManager.getHistory().size(), "History should contain one subtask.");
-
-        taskManager.deleteSubtask(subtaskId); // Delete the subtask
-
-        assertEquals(0, taskManager.getHistory().size(), "History should be empty after deletion.");
-    }
-
-    @Test
-    public void testGetHistoryReturnsCorrectOrder() {
-        Task task1 = new Task("Task 1", "Description", TaskStatus.NEW);
-        task1.setStartTime(LocalDateTime.now()); // Ensure start time is set
-        task1.setDuration(Duration.ofHours(1)); // Ensure duration is set
-        int taskId1 = taskManager.createTask(task1);
-
-        Task task2 = new Task("Task 2", "Description", TaskStatus.NEW);
-        task2.setStartTime(LocalDateTime.now().plusHours(2)); // Ensure start time is set
-        task2.setDuration(Duration.ofHours(1)); // Ensure duration is set
-        int taskId2 = taskManager.createTask(task2);
-
-        taskManager.getTaskById(taskId1); // Add to history
-        taskManager.getTaskById(taskId2); // Add to history
-
-        List<Task> history = taskManager.getHistory();
-        assertEquals(2, history.size(), "History should contain two tasks.");
-        assertEquals(taskId1, history.get(0).getId(), "First in history should be Task 1.");
-        assertEquals(taskId2, history.get(1).getId(), "Second in history should be Task 2.");
-    }
-
-    // Метод для получения специального экземпляра InMemoryTaskManager для тестирования
-    public static InMemoryTaskManager getTestInstance() {
-        return new InMemoryTaskManager() {
-            @Override
-            public Task getTaskById(int id) {
-                return new Task(id, "Test Task", TaskStatus.NEW, "This is a test task");
-            }
-
-            @Override
-            public Subtask getSubtaskById(int id) {
-                return new Subtask(id, "Test Subtask", TaskStatus.NEW, "This is a test subtask", 1);
-            }
-
-            @Override
-            public void updateTask(Task task) {
-                System.out.println("Updating task: " + task);
-            }
-        };
-    }
 }
-

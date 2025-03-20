@@ -98,4 +98,7 @@ class InMemoryHistoryManagerTest {
         historyManager.remove(task.getId()); // Удаляем задачу из истории
         assertTrue(historyManager.getHistory().isEmpty(), "History should be empty after deletion.");
     }
+
+
+
 }
