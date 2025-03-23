@@ -1,7 +1,7 @@
-package Http;
+package http;
 
-import Http.Handler.*;
 import com.sun.net.httpserver.HttpServer;
+import http.handler.*;
 import service.Managers;
 import service.TaskManager;
 

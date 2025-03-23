@@ -1,32 +1,22 @@
-package Http.Handler;
+package http.handler;
 
-import com.google.gson.Gson;
 import com.sun.net.httpserver.HttpExchange;
-import com.sun.net.httpserver.HttpHandler;
 import model.Epic;
 import service.TaskManager;
 
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.nio.charset.StandardCharsets;
 
-import com.sun.net.httpserver.HttpExchange;
 import exceptions.NotFoundException;
-import model.Epic;
 import model.Subtask;
-import service.TaskManager;
 
-import java.io.IOException;
 import java.util.List;
 
 import static java.nio.charset.StandardCharsets.*;
 
 public class EpicHandler extends BaseHttpHandler {
-    private final TaskManager taskManager;
 
     public EpicHandler(TaskManager taskManager) {
-        this.taskManager = taskManager;
+        super(taskManager);
     }
 
     @Override

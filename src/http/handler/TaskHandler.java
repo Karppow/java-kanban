@@ -1,8 +1,8 @@
-package Http.Handler;
+package http.handler;
 
-import com.google.gson.JsonObject;
 import com.sun.net.httpserver.HttpExchange;
 import exceptions.NotFoundException;
+import model.Epic;
 import model.Task;
 import service.TaskManager;
 
@@ -11,10 +11,9 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 public class TaskHandler extends BaseHttpHandler {
-    private final TaskManager taskManager;
 
     public TaskHandler(TaskManager taskManager) {
-        this.taskManager = taskManager;
+        super(taskManager);
     }
 
     @Override
@@ -61,32 +60,19 @@ public class TaskHandler extends BaseHttpHandler {
     @Override
     protected void processPost(HttpExchange exchange, String path) throws IOException {
         String body = new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
-        Task task = gson().fromJson(body, Task.class);
+        int taskId = extractTaskId(path);
 
-        // Проверка на корректность задачи
-        if (!taskManager.validateTask(task)) {
-            System.out.println("Validation failed for new task!");
-            sendError(exchange, "Task time conflicts with existing task", 406);
-            return;
+        if (taskId != -1) {
+            // Если ID задачи присутствует, обновляем эпик
+            Epic epicJson = gson().fromJson(body, Epic.class);
+            epicJson.setId(taskId); // Убедитесь, что у вашего класса Epic есть метод setId
+            taskManager.updateEpic(epicJson);
+            sendJson(exchange, "Epic updated successfully", 200);
+        } else {
+            // Если ID отсутствует, создаем новую задачу
+            Task task = gson().fromJson(body, Task.class);
+            handleCreateTask(exchange, task);
         }
-
-        taskManager.createTask(task);
-        sendJson(exchange, "Task created successfully", 201);
-    }
-
-    private void handleUpdateTask(HttpExchange exchange, int taskId, Task task) throws IOException {
-        Task existingTask = taskManager.getTaskById(taskId);
-        if (existingTask == null) {
-            sendError(exchange, "Task with id " + taskId + " not found", 404);
-            return;
-        }
-        if (!taskManager.validateTask(task)) {
-            System.out.println("Validation failed for task update!");
-            sendError(exchange, "Task time conflicts with existing task", 406);
-            return;
-        }
-        taskManager.updateTask(task);
-        sendJson(exchange, "Task updated successfully", 200);
     }
 
     private void handleCreateTask(HttpExchange exchange, Task task) throws IOException {
@@ -98,30 +84,4 @@ public class TaskHandler extends BaseHttpHandler {
         taskManager.createTask(task);
         sendJson(exchange, "Task created successfully", 201);
     }
-    private int extractTaskId(String path) {
-        // Проверяем, соответствует ли путь ожидаемому формату
-        if (path.matches("^/tasks/\\d+$")) {
-            return Integer.parseInt(path.split("/")[2]); // Извлекаем ID задачи
-        }
-        return -1; // Возвращаем -1, если ID не найден
-    }
-    @Override
-    protected void processPut(HttpExchange exchange, String path) throws IOException {
-        int taskId = extractTaskId(path);
-        if (taskId == -1) {
-            sendError(exchange, "Invalid task ID", 400);
-            return;
-        }
-
-        String requestBody = new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
-        Task task = gson.fromJson(requestBody, Task.class);
-        task.setId(taskId); // Убедитесь, что ID задачи установлен
-
-        boolean updated = taskManager.updateTask(task);
-        if (updated) {
-            sendJson(exchange, "Task updated", 200);
-        } else {
-            sendError(exchange, "Task not found", 404);
-        }
-    }
-    }
+}

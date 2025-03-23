@@ -1,8 +1,8 @@
-package Handler;
+package handler;
 
-import Http.Handler.TypeAdapter.DurationAdapter;
-import Http.Handler.TypeAdapter.LocalDateTimeAdapter;
-import Http.HttpTaskServer;
+import http.handler.typeAdapter.DurationAdapter;
+import http.handler.typeAdapter.LocalDateTimeAdapter;
+import http.HttpTaskServer;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;

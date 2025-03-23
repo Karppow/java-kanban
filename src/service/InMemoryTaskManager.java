@@ -16,7 +16,6 @@ public class InMemoryTaskManager implements TaskManager {
     protected final HistoryManager historyManager = Managers.getDefaultHistory();
     protected int idCounter = 1;
     private final TreeSet<Task> prioritizedTasks = new TreeSet<>(Comparator.comparing(Task::getStartTime, Comparator.nullsLast(Comparator.naturalOrder())));
-    private List<Integer> history = new ArrayList<>();
 
     @Override
     public int createTask(Task task) {
@@ -65,11 +64,11 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public void addToHistory(int taskId) {
-        if (!history.contains(taskId)) {
-            history.add(taskId);
+        Task task = tasks.get(taskId);
+        if (task != null) {
+            historyManager.add(task);
         }
     }
-
 
     @Override
     public int createEpic(Epic epic) {
@@ -263,10 +262,7 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public List<Task> getHistory() {
-        return history.stream()
-                .map(tasks::get)
-                .filter(Objects::nonNull)
-                .collect(Collectors.toList());
+        return historyManager.getHistory();
     }
 
     public List<Task> getPrioritizedTasks() {

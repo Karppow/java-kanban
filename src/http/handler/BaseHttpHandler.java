@@ -1,13 +1,14 @@
-package Http.Handler;
+package http.handler;
 
-import Http.Handler.TypeAdapter.DurationAdapter;
-import Http.Handler.TypeAdapter.LocalDateTimeAdapter;
+import http.handler.typeAdapter.DurationAdapter;
+import http.handler.typeAdapter.LocalDateTimeAdapter;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import exceptions.NotFoundException;
 import exceptions.TaskOverlapException;
+import service.TaskManager;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -16,6 +17,11 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 
 public abstract class BaseHttpHandler implements HttpHandler {
+    protected final TaskManager taskManager;
+
+    public BaseHttpHandler(TaskManager taskManager) {
+        this.taskManager = taskManager;
+    }
 
     protected final Gson gson = new GsonBuilder()
             .registerTypeAdapter(LocalDateTime.class, new LocalDateTimeAdapter())
@@ -104,5 +110,13 @@ public abstract class BaseHttpHandler implements HttpHandler {
 
     public Gson gson() {
         return gson;
+    }
+
+    protected int extractTaskId(String path) {
+        // Проверяем, соответствует ли путь ожидаемому формату
+        if (path.matches("^/tasks/\\d+$")) {
+            return Integer.parseInt(path.split("/")[2]); // Извлекаем ID задачи
+        }
+        return -1; // Возвращаем -1, если ID не найден
     }
 }

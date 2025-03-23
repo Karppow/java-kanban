@@ -1,8 +1,8 @@
-package Handler;
+package handler;
 
-import Http.Handler.TypeAdapter.DurationAdapter;
-import Http.Handler.TypeAdapter.LocalDateTimeAdapter;
-import Http.HttpTaskServer;
+import http.handler.typeAdapter.DurationAdapter;
+import http.handler.typeAdapter.LocalDateTimeAdapter;
+import http.HttpTaskServer;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import model.Task;
@@ -50,7 +50,7 @@ public class TaskHandlerTest {
         String taskJson = gson.toJson(task);
 
         HttpClient client = HttpClient.newHttpClient();
-        URI url = URI.create("http://localhost:8080/tasks"); // Убедитесь, что это правильный URL
+        URI url = URI.create("http://localhost:8080/tasks");
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(url)
                 .POST(HttpRequest.BodyPublishers.ofString(taskJson))
@@ -64,7 +64,6 @@ public class TaskHandlerTest {
         assertEquals(1, tasks.size());
         assertEquals("New Task", tasks.get(0).getTitle());
     }
-
 
     @Test
     public void testGetTaskById() throws IOException, InterruptedException {
@@ -86,29 +85,6 @@ public class TaskHandlerTest {
     }
 
     @Test
-    public void testUpdateTask() throws IOException, InterruptedException {
-        Task task = new Task("Task to Update", "Updating this task", TaskStatus.NEW, Duration.ofMinutes(10), LocalDateTime.now());
-        int taskId = manager.createTask(task);
-
-        task.setTitle("Updated Task");
-        String updatedTaskJson = gson.toJson(task);
-
-        HttpClient client = HttpClient.newHttpClient();
-        URI url = URI.create("http://localhost:8080/tasks/" + taskId);
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(url)
-                .PUT(HttpRequest.BodyPublishers.ofString(updatedTaskJson))
-                .header("Content-Type", "application/json")
-                .build();
-
-        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-        assertEquals(200, response.statusCode());
-
-        Task retrievedTask = manager.getTaskById(taskId);
-        assertEquals("Updated Task", retrievedTask.getTitle());
-    }
-
-    @Test
     public void testDeleteTask() throws IOException, InterruptedException {
         Task task = new Task("Task to Delete", "Deleting this task", TaskStatus.NEW, Duration.ofMinutes(10), LocalDateTime.now());
         int taskId = manager.createTask(task);
@@ -127,4 +103,3 @@ public class TaskHandlerTest {
         assertEquals(0, tasks.size());
     }
 }
-
