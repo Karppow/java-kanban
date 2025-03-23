@@ -7,11 +7,21 @@ import java.time.LocalDateTime;
 
 public class Task {
     private int id;
-    private String title;
-    private String description;
-    private TaskStatus status;
-    private Duration duration;
-    private LocalDateTime startTime;
+    protected String name;
+    protected String title;
+    protected String description;
+    protected TaskStatus status;
+    protected Duration duration;
+    protected LocalDateTime startTime;
+
+    public Task(int id, String name, TaskStatus status, String description, Duration duration, LocalDateTime startTime) {
+        this.id = id;
+        this.name = name;
+        this.status = status;
+        this.description = description;
+        this.duration = duration;
+        this.startTime = startTime;
+    }
 
     public Task(String title, String description, TaskStatus status) {
         this.title = title;
@@ -19,7 +29,7 @@ public class Task {
         this.status = status;
     }
 
-    public Task(String title, String description, TaskStatus status, LocalDateTime startTime, Duration duration) {
+    public Task(String title, String description, TaskStatus status, Duration duration, LocalDateTime startTime) {
         this.title = title;
         this.description = description;
         this.status = status;
@@ -32,6 +42,15 @@ public class Task {
         this.title = title;
         this.description = description;
         this.status = status;
+    }
+
+    public Task(int id, String title, String description, TaskStatus status, Duration duration, LocalDateTime startTime) {
+        this.id = id;
+        this.title = title;
+        this.description = description;
+        this.status = status;
+        this.duration = duration;
+        this.startTime = startTime;
     }
 
     // Геттеры и сеттеры
@@ -56,6 +75,10 @@ public class Task {
             return null;
         }
         return startTime.plus(duration);
+    }
+
+    public String getName() {
+        return name;
     }
 
     public int getId() {

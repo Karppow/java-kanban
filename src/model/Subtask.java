@@ -6,16 +6,24 @@ import java.time.LocalDateTime;
 
 public class Subtask extends Task {
     private final int epicId; // ID эпика
-    private LocalDateTime startTime; // Время начала подзадачи
-    private Duration duration; // Длительность подзадачи
 
-    public Subtask(String title, String description, TaskStatus status, int epicId) {
-        super(title, description, status);
+    public Subtask(String name, String description, TaskStatus status, int epicId) {
+        super(name, description, status);
         this.epicId = epicId;
     }
 
     public Subtask(int id, String name, TaskStatus taskStatus, String description, int epicId) {
         super(id, name, taskStatus, description);
+        this.epicId = epicId;
+    }
+
+    public Subtask(int id, String name, String description, TaskStatus status, int epicId, Duration duration, LocalDateTime startTime) {
+        super(id, name, description, status, duration, startTime);
+        this.epicId = epicId;
+    }
+
+    public Subtask(String name, String description, TaskStatus status, int epicId, Duration duration, LocalDateTime startTime) {
+        super(name, description, status, duration, startTime);
         this.epicId = epicId;
     }
 
