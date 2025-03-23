@@ -38,7 +38,7 @@ public abstract class BaseTaskManagerTest {
 
     protected int createEpic(String title, String description) {
         Epic epic = new Epic(title, description);
-        return taskManager.createEpic(epic).getId();
+        return taskManager.createEpic(epic);
     }
 
     protected void deleteTask(int taskId) {
