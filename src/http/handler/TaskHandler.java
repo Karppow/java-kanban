@@ -63,11 +63,10 @@ public class TaskHandler extends BaseHttpHandler {
         int taskId = extractTaskId(path);
 
         if (taskId != -1) {
-            // Если ID задачи присутствует, обновляем эпик
-            Epic epicJson = gson().fromJson(body, Epic.class);
-            epicJson.setId(taskId); // Убедитесь, что у вашего класса Epic есть метод setId
-            taskManager.updateEpic(epicJson);
-            sendJson(exchange, "Epic updated successfully", 200);
+            Task taskJson = gson().fromJson(body, Task.class); // Изменено на Task
+            taskJson.setId(taskId);
+            taskManager.updateTask(taskJson); // Изменено на updateTask
+            sendJson(exchange, "Task updated successfully", 200);
         } else {
             // Если ID отсутствует, создаем новую задачу
             Task task = gson().fromJson(body, Task.class);
