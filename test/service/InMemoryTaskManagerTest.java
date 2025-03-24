@@ -9,7 +9,6 @@ import org.junit.jupiter.api.Test;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -396,8 +395,9 @@ class InMemoryTaskManagerTest extends TaskManagerTest<InMemoryTaskManager> {
             }
 
             @Override
-            public void updateTask(Task task) {
+            public boolean updateTask(Task task) {
                 System.out.println("Updating task: " + task);
+                return false;
             }
         };
     }

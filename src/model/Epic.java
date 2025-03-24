@@ -8,25 +8,32 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 public class Epic extends Task {
     private final List<Integer> subtaskIds = new ArrayList<>();
     private TaskManager taskManager;
 
-    // Конструктор без ID
-    public Epic(String title, String description) {
-        super(title, description, TaskStatus.NEW);
+    public Epic(String name, String description) {
+        super(name, description, TaskStatus.NEW);
     }
 
     // Конструктор с ID
     public Epic(int id, String name, TaskStatus taskStatus, String description, TaskManager taskManager) {
         super(id, name, taskStatus, description);
-        this.taskManager = taskManager;
+        this.taskManager = taskManager; // Передаем TaskManager
     }
 
     @Override
     public void create(FileBackedTaskManager manager) {
-        // Реализация метода
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getDescription() {
+        return description;
     }
 
     public void addSubtask(int subtaskId) {
@@ -37,16 +44,12 @@ public class Epic extends Task {
         subtaskIds.remove(Integer.valueOf(subtaskId));
     }
 
-    public void removeAllSubtasks() {
-        subtaskIds.clear();
-    }
-
     public List<Integer> getSubtaskIds() {
         return subtaskIds;
     }
 
-    public TaskType getType() {
-        return TaskType.EPIC; // Возвращаем тип задачи
+    public TaskManager getTaskManager() {
+        return taskManager;
     }
 
     public static Epic fromString(String value) {
@@ -56,7 +59,7 @@ public class Epic extends Task {
         TaskStatus status = TaskStatus.valueOf(parts[3]);
         String description = parts[4].equals("null") ? null : parts[4];
 
-        Epic epic = new Epic(id, title, status, description, null); // Убедитесь, что taskManager передан позже
+        Epic epic = new Epic(id, title, status, description, null);
         if (parts.length > 5) {
             String[] subtaskIdStrings = parts[5].split(";");
             for (String subtaskIdString : subtaskIdStrings) {
@@ -77,7 +80,9 @@ public class Epic extends Task {
     @Override
     public LocalDateTime getStartTime() {
         return subtaskIds.stream()
-                .map(taskManager::getSubtaskById) // Исправлено на getSubtaskById
+                .map(taskManager::getSubtaskById)
+                .filter(Optional::isPresent)
+                .map(Optional::get)
                 .map(Subtask::getStartTime)
                 .filter(Objects::nonNull)
                 .min(LocalDateTime::compareTo)
@@ -87,7 +92,9 @@ public class Epic extends Task {
     @Override
     public Duration getDuration() {
         return subtaskIds.stream()
-                .map(taskManager::getSubtaskById) // Исправлено на getSubtaskById
+                .map(taskManager::getSubtaskById)
+                .filter(Optional::isPresent)
+                .map(Optional::get)
                 .map(Subtask::getDuration)
                 .reduce(Duration.ZERO, Duration::plus);
     }
@@ -95,7 +102,9 @@ public class Epic extends Task {
     @Override
     public LocalDateTime getEndTime() {
         return subtaskIds.stream()
-                .map(taskManager::getSubtaskById) // Исправлено на getSubtaskById
+                .map(taskManager::getSubtaskById)
+                .filter(Optional::isPresent)
+                .map(Optional::get)
                 .map(Subtask::getEndTime)
                 .filter(Objects::nonNull)
                 .max(LocalDateTime::compareTo)

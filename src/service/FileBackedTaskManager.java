@@ -1,6 +1,5 @@
 package service;
 
-import exceptions.ManagerReadFileException;
 import exceptions.ManagerSaveException;
 import model.Epic;
 import model.Subtask;
@@ -38,9 +37,10 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
     }
 
     @Override
-    public void deleteTask(int id) {
+    public boolean deleteTask(int id) {
         super.deleteTask(id);
         save();
+        return false;
     }
 
     @Override
